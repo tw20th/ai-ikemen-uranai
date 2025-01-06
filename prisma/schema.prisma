@@ -1,0 +1,15 @@
+datasource db {
+  provider = "sqlite"       // SQLiteを使用
+  url      = "file:./dev.db" // ローカルデータベースファイル
+}
+
+generator client {
+  provider = "prisma-client-js" // Prismaクライアント生成
+}
+
+model Fortune {
+  id        Int      @id @default(autoincrement()) // 自動採番ID
+  category  String   // 占いカテゴリ（例: 恋愛運、仕事運）
+  message   String   // 占い結果メッセージ
+  createdAt DateTime @default(now())              // 作成日時
+}
