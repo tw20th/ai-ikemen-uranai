@@ -1,67 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Fortune = {
-  category: string;
-  message: string;
+  story: string;
+  advice: string;
 };
 
-const categories = ["恋愛運", "仕事運", "健康運", "金運"];
-
 export default function AlternatePage() {
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]); // 初期カテゴリ
   const [fortune, setFortune] = useState<Fortune | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchFortune = async () => {
+  const fetchPersonalizedFortune = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/fortune?category=${selectedCategory}`);
+      const response = await fetch("/api/personalized-fortune");
       const data = await response.json();
-      setFortune(data);
+
+      if (response.ok) {
+        setFortune(data);
+      } else {
+        console.error("Error fetching fortune:", data.error);
+        setFortune(null);
+      }
     } catch (error) {
       console.error("Error fetching fortune:", error);
+      setFortune(null);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchPersonalizedFortune();
+  }, []);
+
   return (
     <div className="p-8 text-center">
-      <h1 className="text-3xl font-bold mb-4">データベース占い</h1>
-      <p className="mb-4">カテゴリを選んで占い結果を確認しましょう！</p>
-
-      {/* カテゴリ選択 */}
-      <select
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-        className="mb-4 px-4 py-2 border rounded"
-      >
-        {categories.map((category) => (
-          <option key={category} value={category}>
-            {category}
-          </option>
-        ))}
-      </select>
-
-      {/* 占いボタン */}
-      <button
-        onClick={fetchFortune}
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-      >
-        占いを見る
-      </button>
-
-      {/* ローディング */}
-      {loading && <p className="mt-4 text-gray-600">占い中...</p>}
-
-      {/* 結果表示 */}
-      {fortune && (
+      <h1 className="text-3xl font-bold mb-4">今日の占い</h1>
+      {loading && <p className="text-gray-600">占いを生成中...</p>}
+      {fortune ? (
         <div className="mt-4 p-4 border rounded shadow-lg">
-          <h2 className="text-xl font-semibold">{fortune.category}</h2>
-          <p className="mt-2 text-gray-800">{fortune.message}</p>
+          <h2 className="text-xl font-semibold">占い結果</h2>
+          <p className="mt-2">{fortune.story}</p>
+          <p className="mt-4 text-gray-600">アドバイス: {fortune.advice}</p>
         </div>
+      ) : (
+        <p className="text-red-600">占い結果が表示できませんでした。</p>
       )}
     </div>
   );

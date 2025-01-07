@@ -5,25 +5,28 @@ const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const category = searchParams.get("category"); // カテゴリを取得
-
-  if (!category) {
-    return NextResponse.json(
-      { error: "カテゴリが指定されていません。" },
-      { status: 400 }
-    );
-  }
+  const category = searchParams.get("category");
 
   try {
-    // 指定されたカテゴリからランダムに1件取得
-    const fortune = await prisma.fortune.findFirst({
-      where: { category },
-      orderBy: { createdAt: "desc" },
-    });
+    let fortune;
+
+    if (category) {
+      // 指定されたカテゴリの占い結果を取得
+      fortune = await prisma.fortune.findFirst({
+        where: { category },
+        orderBy: { createdAt: "desc" },
+      });
+    } else {
+      // カテゴリが指定されていない場合はランダムに取得
+      const allFortunes = await prisma.fortune.findMany();
+      if (allFortunes.length > 0) {
+        fortune = allFortunes[Math.floor(Math.random() * allFortunes.length)];
+      }
+    }
 
     if (!fortune) {
       return NextResponse.json(
-        { error: `カテゴリ「${category}」の占い結果が見つかりません。` },
+        { error: "占い結果が見つかりません。" },
         { status: 404 }
       );
     }
@@ -31,6 +34,9 @@ export async function GET(request: Request) {
     return NextResponse.json(fortune);
   } catch (error) {
     console.error("Error fetching fortune:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "サーバーエラーが発生しました。" },
+      { status: 500 }
+    );
   }
 }

@@ -13,3 +13,19 @@ model Fortune {
   message   String   // 占い結果メッセージ
   createdAt DateTime @default(now())              // 作成日時
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  birthday  DateTime
+  createdAt DateTime @default(now())
+}
+
+model UserFortune {
+  id        Int      @id @default(autoincrement())
+  name      String
+  birthday  DateTime
+  story     String
+  advice    String
+  createdAt DateTime @default(now())
+}
