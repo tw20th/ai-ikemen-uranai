@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Header from "@/components/Header"; // ヘッダーコンポーネントをインポート
+import Footer from "@/components/Footer"; // フッターコンポーネントをインポート
 
 // ユーザーの型定義
 type User = {
@@ -16,7 +18,6 @@ export default function HomePage() {
   const fetchUserStatus = async () => {
     setLoading(true);
     try {
-      console.log("Fetching user status..."); // リクエスト開始時にログを表示
       const response = await fetch("/api/auth/status", {
         method: "GET",
         headers: {
@@ -24,17 +25,14 @@ export default function HomePage() {
         },
       });
       const data = await response.json();
-      console.log("User status response:", data); // レスポンス内容をログ出力
 
       if (data.isLoggedIn) {
-        console.log("User is logged in:", data.user); // ログイン済みの場合のログ
         setUser(data.user); // ユーザー情報をセット
       } else {
-        console.log("User is not logged in."); // 未ログインの場合のログ
         setUser(null);
       }
     } catch (error) {
-      console.error("ログイン状態の取得に失敗しました:", error); // エラー時のログ
+      console.error("ログイン状態の取得に失敗しました:", error);
       setUser(null);
     } finally {
       setLoading(false);
@@ -42,7 +40,6 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    console.log("useEffect triggered!"); // useEffectの発火確認
     fetchUserStatus();
   }, []);
 
@@ -51,32 +48,15 @@ export default function HomePage() {
   }
 
   return (
-    <div className="p-4">
-      {/* ヘッダー */}
-      <header className="flex justify-between items-center py-4">
-        <h1 className="text-2xl font-bold">占いサイト</h1>
-        <nav>
-          {user ? (
-            <>
-              <Link href="/profile" className="mr-4">プロフィール</Link>
-              <Link href="/logout" className="text-blue-500">ログアウト</Link>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="mr-4">ログイン</Link>
-              <Link href="/register" className="text-blue-500">登録</Link>
-            </>
-          )}
-        </nav>
-      </header>
+    <div className="flex flex-col min-h-screen">
+      <Header user={user} /> {/* ユーザー情報をヘッダーに渡す */}
 
-      {/* メインコンテンツ */}
-      <main className="text-center mt-8">
+      <main className="flex-1 text-center mt-8">
         {user ? (
           <>
             <h2 className="text-3xl font-bold mb-4">おかえりなさい、{user.name}さん！</h2>
             <p className="mb-8 text-gray-600">今日の運勢を占ってみましょう！</p>
-            <Link href="/alternate">
+            <Link href="/fortune">
               <button className="px-6 py-2 bg-red-500 text-white rounded-lg">
                 占いを始める
               </button>
@@ -87,7 +67,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-4">あなたの今日の運勢を占いましょう！</h2>
             <p className="mb-8 text-gray-600">登録せずに占いを試すこともできます。</p>
             <div className="space-y-4">
-              <Link href="/alternate">
+              <Link href="/fortune">
                 <button className="px-6 py-2 bg-red-500 text-white rounded-lg">
                   占いを始める
                 </button>
@@ -101,6 +81,8 @@ export default function HomePage() {
           </>
         )}
       </main>
+
+      <Footer /> {/* フッターコンポーネントを追加 */}
     </div>
   );
 }
